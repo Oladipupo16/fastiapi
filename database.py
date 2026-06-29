@@ -6,6 +6,10 @@ from sqlalchemy.orm import sessionmaker
 import os
 DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://postgres@localhost/taskdb")
 
+# Render uses postgres:// but SQLAlchemy needs postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(bind=engine)
