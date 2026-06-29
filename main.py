@@ -5,7 +5,8 @@ import models
 from database import engine, get_db
 from auth import hash_password, verify_password, create_access_token
 from auth import hash_password, verify_password, create_access_token, get_current_user_id
-
+from database import Base
+from sqlalchemy import Column, Integer, String, Boolean
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -42,6 +43,10 @@ def get_task(task_id: int, db: Session = Depends(get_db), current_user_id: int =
     return task
 
 # ✅ Create a task
+@app.get("/tasks")
+def list_tasks(db: Session = Depends(get_db), current_user_id: int = Depends(get_current_user_id)):
+    return db.query(models.Task).filter(models.Task.user_id == current_user_id).all()
+
 @app.post("/tasks", status_code=201)
 def create_task(task: TaskCreate, db: Session = Depends(get_db), current_user_id: int = Depends(get_current_user_id)):
     db_task = models.Task(**task.dict(), user_id=current_user_id)
@@ -100,6 +105,20 @@ def login(user: UserLogin, db: Session = Depends(get_db)):
     token = create_access_token(data={"user_id": db_user.id})
     return {"access_token": token, "token_type": "bearer"}
 
-@app.get("/tasks")
-def list_tasks(db: Session = Depends(get_db), current_user_id: int = Depends(get_current_user_id)):
-    return db.query(models.Task).all()
+
+class Task(Base):
+    __tablename__ = "tasks"
+
+    id          = Column(Integer, primary_key=True, index=True)
+    title       = Column(String, nullable=False)
+    description = Column(String)
+    completed   = Column(Boolean, default=False)
+    user_id     = Column(Integer)   # 👈 NEW — links each task to a user
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id              = Column(Integer, primary_key=True, index=True)
+    email           = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
