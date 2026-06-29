@@ -8,6 +8,7 @@ class Task(Base):
     title       = Column(String, nullable=False)
     description = Column(String)
     completed   = Column(Boolean, default=False)
+    user_id     = Column(Integer)
 
 
 class User(Base):
