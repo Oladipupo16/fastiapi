@@ -30,9 +30,7 @@ class UserLogin(BaseModel):
     password: str
 
 # ✅ Get all tasks
-@app.get("/tasks")
-def list_tasks(db: Session = Depends(get_db), current_user_id: int = Depends(get_current_user_id)):
-    return db.query(models.Task).filter(models.Task.user_id == current_user_id).all()
+
 
 # ✅ Get one task
 @app.get("/tasks/{task_id}")
